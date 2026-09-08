@@ -1,0 +1,75 @@
+# FLYBOARD button presets -> MaleCNS v1.0 type names.
+#
+# Each button resolves by walking `tiers` in order and taking the FIRST tier that
+# matches cells in the loaded MaleCNS graph. If every tier matches 0 cells, the
+# button becomes a PROXY that drives a small default superclass subset instead and
+# the brain banner turns orange.
+#
+# Selector keys (combined with AND inside one tier list):
+#   type_glob     glob against MaleCNS `type` names (e.g. "SNta*")
+#   super         exact superclass name(s)
+#   receptor      1 = putative ppk25 (nociceptive-like), 2 = ppk23, 3 = IR52b
+#   fru           "fru_high" | "fru_low" | "coexpress_high" | ...
+#   dimorphism    "male-specific" | "potentially male-specific" | "sexually dimorphic" | ...
+#   nt            neurotransmitter list; use "*dop*"-style via nt_glob
+#   nt_glob       glob on transmitter names (e.g. "*dop*")
+#   exit_nerve    MaleCNS exit nerve (motor/sensory peripheral nerves)
+#   neuromere     MaleCNS somal neuromere (VNC segment letters)
+button_footer: "MaleCNS measured wiring. Toy dynamics. Buttons are current injectors."
+buttons:
+  FOOD:
+    hold_ms: 250
+    note: "similar idea: drive taste cells and watch downstream (see Shiu et al. 2024); we do not reproduce their feeding circuit"
+    tiers:
+      - [ {type_glob: "SNta*"}, {receptor: [3]} ]
+      - [ {type_glob: "tpGRN*"} ]
+      - [ {type_glob: "SNch*"} ]
+      - [ {super: ["cb_sensory", "vnc_sensory"], dimorphism: "sexually dimorphic"} ]
+    proxy:
+      super: ["cb_sensory"]
+      take: 120
+  PAIN:
+    hold_ms: 250
+    note: "nociceptive / harsh chemosensory and multimodal sensory types; extra noise on proxy"
+    tiers:
+      - [ {receptor: [1]} ]
+      - [ {receptor: [2]}, {type_glob: "SNpp*"} ]
+      - [ {super: ["cb_sensory", "vnc_sensory"]} ]
+    proxy:
+      super: ["cb_sensory"]
+      take: 160
+    extra_noise: true
+  LICK:
+    hold_ms: 250
+    note: "proboscis / mouth motor + feeding-related descending; expect motor & descending to light, not the whole brain"
+    tiers:
+      - [ {exit_nerve: ["PhN", "MxLbN"]} ]
+      - [ {super: ["cb_motor", "vnc_motor"], neuromere: ["GN", "LB"]} ]
+      - [ {super: "descending_neuron", type_glob: "*prob*"} ]
+      - [ {super: "descending_neuron", neuromere: ["GN"]} ]
+    proxy:
+      super: ["cb_motor", "vnc_motor"]
+      take: 100
+  MATE:
+    hold_ms: 250
+    note: "MaleCNS male-dimorphic courtship-related cells (fru-high + sexually dimorphic)"
+    tiers:
+      - [ {fru: "fru_high"}, {dimorphism: "sexually dimorphic"} ]
+      - [ {fru: "fru_high"} ]
+      - [ {dimorphism: "male-specific"} ]
+      - [ {dimorphism: "sexually dimorphic"} ]
+    proxy:
+      super: ["descending_neuron"]
+      take: 100
+  ORGASM:
+    hold_ms: 250
+    note: "dopaminergic / reward-associated types (DAN-like) via predicted transmitter; UI must say FAKE REWARD BURST"
+    tiers:
+      - [ {nt_glob: "*dop*"} ]
+      - [ {type_glob: "DAN*"} ]
+      - [ {type_glob: "PAM*"} ]
+    bounded_extra_drive: true
+    proxy:
+      super: ["cb_intrinsic"]
+      take: 120
+    extra_noise: true

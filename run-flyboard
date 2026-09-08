@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# FLYBOARD — MaleCNS whole-CNS simulation + arcade current-injection buttons.
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+PYTHON="${DIR}/.venv/bin/python"
+if [ ! -x "$PYTHON" ]; then
+  echo "creating venv..."
+  python3 -m venv --system-site-packages "${DIR}/.venv"
+  "${DIR}/.venv/bin/pip" install -q --no-input -r "${DIR}/requirements.txt"
+fi
+
+case "${1:-}" in
+  --cite|--help|-h)
+    exec "$PYTHON" -m flyboard "$@"
+    ;;
+  fetch|status)
+    exec "$PYTHON" -m flyboard.data "$@"
+    ;;
+  build)
+    shift
+    exec "$PYTHON" -m flyboard.build "$@"
+    ;;
+  *)
+    exec "$PYTHON" -m flyboard "$@"
+    ;;
+esac
