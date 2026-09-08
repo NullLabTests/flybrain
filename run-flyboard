@@ -19,6 +19,7 @@ case "${1:-}" in
     ;;
   build)
     shift
+    "$PYTHON" -m flyboard.soma >/dev/null 2>&1 || true
     exec "$PYTHON" -m flyboard.build "$@"
     ;;
   *)
